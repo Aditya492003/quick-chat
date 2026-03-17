@@ -18,7 +18,7 @@ export async function POST(req){
     const body = JSON.stringify(payload);
     const {data, type} = wh.verify(body, svixHeaders)
 
-    // prepare userdata to store in db 
+    // prepare userdata to store in db
 
     const userData = {
         _id: data.id,

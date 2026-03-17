@@ -27,7 +27,7 @@ export default function Home() {
       {messages.length === 0 ? (
         <>
         <div className="flex items-center gap-3">
-          <Image src={assets.logo_icon} alt="" className="h-16"/>
+          <Image src={assets.deepthink_icon} alt="" className="h-16 size-8 "/>
           <p className="text-2xl font-medium">Hi, I'm Quick Chat.</p>
         </div>
         <p className="text-sm mt-2">How can I help you Today??</p>
@@ -51,4 +51,4 @@ export default function Home() {
 }
 
 
-//ui done 1hr:45min:58sec......
+
