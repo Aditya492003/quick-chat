@@ -1,4 +1,5 @@
 import connectDB from "@/config/db";
+import { checkCanGenerateResponse, recordTokenUsage } from "@/config/quota";
 import Chat from "@/models/Chat";
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
@@ -16,6 +17,20 @@ export async function POST(req) {
 
         if (!prompt || typeof prompt !== "string") {
             return NextResponse.json({ success: false, message: "Prompt is required" }, { status: 400 });
+        }
+
+        let quotaData = null;
+        if (userId) {
+            const quotaResult = await checkCanGenerateResponse(userId);
+            quotaData = quotaResult.quota;
+            if (!quotaResult.allowed) {
+                return NextResponse.json({
+                    success: false,
+                    rateLimited: true,
+                    error: quotaResult.error,
+                    quota: quotaResult.quota,
+                }, { status: 429 });
+            }
         }
 
         await connectDB();
@@ -52,6 +67,12 @@ export async function POST(req) {
 
         const aiResponse = completion.choices[0]?.message?.content || "No response received from model.";
 
+        // Calculate tokens consumed (from Groq API usage metadata, or fallback estimate)
+        const promptLength = prompt ? prompt.length : 0;
+        const responseLength = aiResponse ? aiResponse.length : 0;
+        const estimatedTokens = Math.ceil((promptLength + responseLength) / 4);
+        const tokensConsumed = completion.usage?.total_tokens || estimatedTokens;
+
         const userMessageObj = { role: "user", content: prompt, timestamp: Date.now() };
         const aiMessageObj = { role: "assistant", content: aiResponse, timestamp: Date.now() };
 
@@ -67,6 +88,8 @@ export async function POST(req) {
                     messages: [userMessageObj, aiMessageObj],
                 });
             }
+
+            quotaData = await recordTokenUsage(userId, tokensConsumed);
         }
 
         return NextResponse.json({
@@ -74,6 +97,8 @@ export async function POST(req) {
             response: aiResponse,
             chatId: chat ? chat._id : null,
             chat: chat || null,
+            quota: quotaData,
+            tokensConsumed,
         });
 
     } catch (error) {

@@ -18,6 +18,7 @@ export const AppContextProvider = ({ children }) => {
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isDeepThink, setIsDeepThink] = useState(false);
+    const [quota, setQuota] = useState(null);
 
     const fetchChats = async () => {
         if (!user) return;
@@ -31,17 +32,36 @@ export const AppContextProvider = ({ children }) => {
         }
     };
 
+    const fetchQuota = async () => {
+        if (!user) return;
+        try {
+            const res = await axios.get("/api/quota");
+            if (res.data.success) {
+                setQuota(res.data.quota);
+            }
+        } catch (error) {
+            console.error("Failed to fetch quota:", error);
+        }
+    };
+
     useEffect(() => {
         if (isLoaded && user) {
             fetchChats();
+            fetchQuota();
         } else if (isLoaded && !user) {
             setChats([]);
             setCurrentChat(null);
             setMessages([]);
+            setQuota(null);
         }
     }, [user, isLoaded]);
 
     const startNewChat = async () => {
+        if (quota && quota.chatsUsed >= quota.chatsLimit) {
+            toast.error(`Daily chat creation limit reached (4 chats/day)`);
+            return null;
+        }
+
         try {
             if (user) {
                 const res = await axios.post("/api/chat/create");
@@ -50,6 +70,7 @@ export const AppContextProvider = ({ children }) => {
                     setChats((prev) => [newChat, ...prev]);
                     setCurrentChat(newChat);
                     setMessages([]);
+                    if (res.data.quota) setQuota(res.data.quota);
                     return newChat;
                 }
             } else {
@@ -58,6 +79,12 @@ export const AppContextProvider = ({ children }) => {
             }
         } catch (error) {
             console.error("Error creating chat:", error);
+            if (error.response?.data?.rateLimited) {
+                toast.error(error.response.data.message || "Daily chat creation limit reached (4 chats/day)");
+                if (error.response.data.quota) setQuota(error.response.data.quota);
+            } else {
+                toast.error("Error creating chat");
+            }
             setCurrentChat(null);
             setMessages([]);
         }
@@ -70,6 +97,11 @@ export const AppContextProvider = ({ children }) => {
 
     const sendMessage = async (promptText) => {
         if (!promptText || !promptText.trim()) return;
+
+        if (quota && quota.isResponseBlocked) {
+            toast.error("Response limit reached. 4-hour waiting time active.");
+            return;
+        }
 
         const userMsg = { role: "user", content: promptText, timestamp: Date.now() };
         setMessages((prev) => [...prev, userMsg]);
@@ -97,12 +129,21 @@ export const AppContextProvider = ({ children }) => {
                         }
                     });
                 }
+
+                if (res.data.quota) {
+                    setQuota(res.data.quota);
+                }
             } else {
                 toast.error(res.data.error || "Failed to generate response");
             }
         } catch (error) {
             console.error("Error sending message:", error);
-            toast.error("Failed to connect to AI server");
+            if (error.response?.data?.rateLimited) {
+                toast.error(error.response.data.error || "Response limit reached. 4-hour waiting time active.");
+                if (error.response.data.quota) setQuota(error.response.data.quota);
+            } else {
+                toast.error("Failed to connect to AI server");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -149,6 +190,8 @@ export const AppContextProvider = ({ children }) => {
         isLoading,
         isDeepThink,
         setIsDeepThink,
+        quota,
+        fetchQuota,
         fetchChats,
         startNewChat,
         selectChat,

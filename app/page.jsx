@@ -55,7 +55,7 @@ export default function Home() {
                 <Image src={assets.deepthink_icon} alt="Logo" className="h-14 w-14" />
                 <h1 className="text-3xl font-semibold text-white tracking-tight">Hi, I'm Quick Chat.</h1>
               </div>
-              <p className="text-gray-400 text-sm mb-8">Powered by Quick-ai. How can I help you today?</p>
+              <p className="text-gray-400 text-sm mb-8">Powered by Quick-ai. Try our Quick-AI; navigate to it from sidebar</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
                 {samplePrompts.map((item, idx) => (

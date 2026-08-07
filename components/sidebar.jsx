@@ -5,6 +5,7 @@ import { useClerk, UserButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import { useState } from 'react';
 import ChatLabel from './ChatLabel';
+import QuotaUsage from './QuotaUsage';
 
 const Sidebar = ({ expand, setExpand }) => {
     const { openSignIn } = useClerk();
@@ -15,7 +16,7 @@ const Sidebar = ({ expand, setExpand }) => {
         <div className={`flex flex-col justify-between bg-[#212327] pt-7 transition-all z-50 max-md:absolute max-md:h-screen ${expand ? 'p-4 w-64' : 'md:w-20 w-0 max-md:overflow-hidden'}`}>
             <div>
                 <div className={`flex ${expand ? "flex-row gap-10" : "flex-col items-center gap-8"}`}>
-                    <a href="#"><Image className={expand ? "w-36" : "w-10"} src={expand ? assets.logo : assets.deepthink_icon} alt='Quick Chat' /></a>
+                    <a href="https://quick-ai-eta-seven.vercel.app/"><Image className={expand ? "w-36" : "w-10"} src={expand ? assets.logo : assets.deepthink_icon} alt='Quick Chat' /></a>
 
                     <div onClick={() => setExpand(!expand)}
                         className='group relative flex items-center justify-center hover:bg-gray-500/20 transition-all duration-300 h-9 w-9 aspect-square rounded-lg cursor-pointer'>
@@ -30,11 +31,10 @@ const Sidebar = ({ expand, setExpand }) => {
 
                 <button
                     onClick={startNewChat}
-                    className={`mt-8 flex items-center cursor-pointer transition ${
-                        expand
-                            ? "bg-blue-600 hover:bg-blue-500 rounded-full gap-3 py-2.5 px-5 w-full justify-center text-white shadow-lg font-medium"
-                            : "group relative h-9 w-9 mx-auto hover:bg-gray-500/30 rounded-lg justify-center"
-                    }`}
+                    className={`mt-8 flex items-center cursor-pointer transition ${expand
+                        ? "bg-blue-600 hover:bg-blue-500 rounded-full gap-3 py-2.5 px-5 w-full justify-center text-white shadow-lg font-medium"
+                        : "group relative h-8 w-8 mx-auto hover:bg-gray-500/30 rounded-lg justify-center"
+                        }`}
                 >
                     <Image className={expand ? 'w-5' : 'w-6'} src={expand ? assets.chat_icon : assets.chat_icon_dull} alt='' />
                     {!expand && (
@@ -48,7 +48,7 @@ const Sidebar = ({ expand, setExpand }) => {
 
                 <div className={`mt-8 text-white/40 text-sm ${expand ? "block" : "hidden"}`}>
                     <p className='my-2 text-xs font-semibold uppercase tracking-wider text-gray-400 px-1'>Recents</p>
-                    <div className="overflow-y-auto max-h-[calc(100vh-280px)] pr-1">
+                    <div className="overflow-y-auto max-h-[calc(100vh-380px)] pr-1">
                         {chats && chats.length > 0 ? (
                             chats.map((chat) => (
                                 <ChatLabel
@@ -66,22 +66,9 @@ const Sidebar = ({ expand, setExpand }) => {
             </div>
 
             <div>
-                <div className={`flex cursor-pointer items-center group relative ${expand ? "gap-2 text-white/80 text-sm p-2.5 border border-gray-700/60 rounded-lg hover:bg-white/10" : "h-10 w-10 mx-auto hover:bg-gray-500/30 rounded-lg"}`}>
-                    <Image className={expand ? "w-5" : "w-6 mx-auto"} src={expand ? assets.phone_icon : assets.phone_icon_dull} alt='' />
-                    <div className={`absolute -top-60 pb-8 ${!expand && "-right-40"} opacity-0 group-hover:opacity-100 hidden group-hover:block transition z-50`}>
-                        <div className='relative w-max bg-black text-white text-sm p-3 rounded-lg shadow-lg'>
-                            <Image src={assets.qrcode} alt='' className='w-44' />
-                            <p className='text-center mt-2 text-xs text-gray-300'>Scan to use App</p>
-                            <div className={`w-3 h-3 absolute bg-black rotate-45 ${expand ? "right-1/2" : "left-4"} -bottom-1.5`}></div>
-                        </div>
-                    </div>
-                    {expand && (
-                        <>
-                            <span>Get App</span>
-                            <Image alt='' src={assets.new_icon} className='ml-auto w-4' />
-                        </>
-                    )}
-                </div>
+                <QuotaUsage expand={expand} />
+
+
 
                 <div
                     onClick={user ? null : openSignIn}
