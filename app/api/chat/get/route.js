@@ -1,27 +1,27 @@
 import connectDB from "@/config/db";
 import Chat from "@/models/Chat";
-import { getAuth } from "@clerk/nextjs/dist/types/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
     try {
-        const {userId} = getAuth(req);
+        const { userId } = getAuth(req);
 
-        if(!userId) {
+        if (!userId) {
             return NextResponse.json({
                 success: false,
-                message: "user not authenticated",
-            })
+                message: "User not authenticated",
+            }, { status: 401 });
         }
 
-        //connect to db and fetch chat from db 
         await connectDB();
-        const data = await Chat.find({userId});
+        const data = await Chat.find({ userId }).sort({ updatedAt: -1 });
 
         return NextResponse.json({
-            success:true, data
-        })
+            success: true,
+            data
+        });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message});
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

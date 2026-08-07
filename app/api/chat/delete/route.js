@@ -1,25 +1,29 @@
 import connectDB from "@/config/db";
 import Chat from "@/models/Chat";
-import { getAuth } from "@clerk/nextjs/dist/types/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-export async function POST(req){
+export async function POST(req) {
     try {
-        const {userId} = getAuth(req);
-        const {chatId} = await req.json();
-
+        const { userId } = getAuth(req);
 
         if (!userId) {
             return NextResponse.json({
                 success: false,
-                message: "user not authenticated",
-            });
+                message: "User not authenticated",
+            }, { status: 401 });
+        }
+
+        const { chatId } = await req.json();
+
+        if (!chatId) {
+            return NextResponse.json({ success: false, message: "Missing chatId" }, { status: 400 });
         }
 
         await connectDB();
-        await Chat.deleteOne({_id: chatId, userId})
-        return NextResponse.json({success: true, message: "chat deleted"})
+        await Chat.deleteOne({ _id: chatId, userId });
+        return NextResponse.json({ success: true, message: "Chat deleted" });
     } catch (error) {
-        return NextResponse.json({success: false, error: error.message});
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
