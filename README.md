@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Quick Chat
 
-## Getting Started
+Quick Chat is a modern AI chat application built with Next.js 15, React 19, Clerk authentication, MongoDB, and the Groq OpenAI-compatible API. It supports saved chat history, message search, chat sharing, export options, and usage quotas for chat creation and token generation.
 
-First, run the development server:
+## Features
+
+- AI chat powered by Groq `llama-3.3-70b-versatile` via the OpenAI-compatible endpoint
+- User authentication using Clerk
+- MongoDB persistence for saved chats and quota tracking
+- New chat creation with daily chat limits
+- Token usage limit: 20,000 tokens per 4 hours with automatic cooldown enforcement
+- DeepThink mode for structured, reasoning-focused responses
+- Shareable chat links and export to Markdown/JSON
+- Responsive UI with sidebar chat management and search modal
+
+## Tech stack
+
+- Next.js 15+ (App Router)
+- React 19
+- Clerk for authentication
+- MongoDB / Mongoose
+- Groq OpenAI-compatible API
+- Tailwind CSS 4
+- Axios for client API calls
+- React Hot Toast for notifications
+
+## Project structure
+
+- `app/` — Next.js front-end pages, layouts, and API routes
+- `components/` — UI components for chat, sidebar, header, prompt box, search modal, and quota display
+- `context/` — application context and chat state management
+- `config/` — MongoDB connection and quota logic
+- `models/` — Mongoose models for `Chat` and `User`
+- `public/` — static assets
+
+## Setup
+
+1. Clone the repository:
+
+```bash
+git clone <repo-url>
+cd quick-chat
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create a `.env.local` file in the project root with the required environment variables:
+
+```bash
+MONGODB_URI=<your-mongodb-connection-string>
+GROQ_API_KEY=<your-groq-openai-api-key>
+CLERK_FRONTEND_API=<your-clerk-frontend-api>
+CLERK_API_KEY=<your-clerk-api-key>
+CLERK_SIGN_IN_URL=<your-clerk-sign-in-url>
+CLERK_SIGN_UP_URL=<your-clerk-sign-up-url>
+```
+
+> Note: This project uses Clerk auth, so you should configure your Clerk application and obtain the appropriate keys/URLs from your Clerk dashboard.
+
+4. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open the app in your browser:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+- `MONGODB_URI` — MongoDB connection string for chat and quota data
+- `GROQ_API_KEY` — API key for the Groq OpenAI-compatible service
+- `CLERK_FRONTEND_API` — Clerk frontend API key
+- `CLERK_API_KEY` — Clerk backend API key (if required for server-side Clerk routes)
+- `CLERK_SIGN_IN_URL` — Clerk sign-in URL
+- `CLERK_SIGN_UP_URL` — Clerk sign-up URL
 
-To learn more about Next.js, take a look at the following resources:
+## Running the app
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev` — start the development server
+- `npm run build` — build production assets
+- `npm start` — launch the production server
+- `npm run lint` — run ESLint
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API routes
 
-## Deploy on Vercel
+- `POST /api/chat/ai` — send a prompt to the AI and save the chat response
+- `POST /api/chat/create` — create a new chat with daily quota enforcement
+- `GET /api/chat/get` — fetch saved chats for the authenticated user
+- `POST /api/chat/delete` — delete a chat
+- `POST /api/chat/rename` — rename a chat
+- `GET /api/chat/share?id=<chatId>` — fetch public chat share data
+- `GET /api/quota` — get current user quota state
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Quota behavior
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Each user can create up to 4 chats per 24-hour period.
+- AI response generation is limited to 20,000 tokens per 4-hour window.
+- When the token limit is reached, users are blocked for 4 hours.
+
+## Notes
+
+- The app uses a `DeepThink` toggle for more structured reasoning responses.
+- Chat share links are copied to the clipboard from the chat header.
+- The current implementation saves message history per authenticated user only.
+
+## Deployment
+
+This app is ready for deployment on Vercel or any platform that supports Next.js 15 and environment variables. Ensure the environment variables are set for MONGODB, GROQ, and Clerk before deploying.
+
+---
+
+If you want, I can also add a short `README` section describing the UI controls and deep-think mode in more detail.
