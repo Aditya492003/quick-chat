@@ -76,6 +76,7 @@ const PrompBox = () => {
                     <button
                         type='button'
                         disabled={isBlocked}
+                        onClick={() => window.dispatchEvent(new CustomEvent("open-search-modal"))}
                         className={`flex items-center gap-2 text-xs border border-gray-400/40 text-gray-300 px-3 py-1 rounded-full transition ${
                             isBlocked ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-500/20'
                         }`}

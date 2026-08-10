@@ -1,7 +1,9 @@
 'use client';
 import { assets } from "@/assets/assets";
+import ChatHeader from "@/components/ChatHeader";
 import Message from "@/components/Message";
 import PrompBox from "@/components/PrompBox";
+import SearchModal from "@/components/SearchModal";
 import Sidebar from "@/components/sidebar";
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
@@ -10,6 +12,7 @@ import { Toaster } from "react-hot-toast";
 
 export default function Home() {
   const [expand, setExpand] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { messages, isLoading, sendMessage } = useAppContext();
   const messagesEndRef = useRef(null);
 
@@ -20,6 +23,12 @@ export default function Home() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    const handleOpenSearch = () => setIsSearchOpen(true);
+    window.addEventListener("open-search-modal", handleOpenSearch);
+    return () => window.removeEventListener("open-search-modal", handleOpenSearch);
+  }, []);
 
   const samplePrompts = [
     { title: "Write a React Hook", text: "Create a custom React hook for fetching API data with error handling." },
@@ -32,10 +41,11 @@ export default function Home() {
     <div className="flex h-screen bg-[#292a2d] text-white overflow-hidden">
       <Toaster position="top-right" />
       <Sidebar expand={expand} setExpand={setExpand} />
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
-      <div className="flex-1 flex flex-col items-center justify-between px-4 py-6 relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-between px-4 py-4 relative overflow-hidden">
         {/* Mobile Header */}
-        <div className="md:hidden absolute px-4 top-4 left-0 right-0 flex items-center justify-between w-full z-40 bg-[#292a2d]/90 py-2 backdrop-blur">
+        <div className="md:hidden absolute px-4 top-4 left-0 right-0 flex items-center justify-between w-full z-40 bg-[#292a2d]/90 py-2 backdrop-blur border-b border-gray-700/50">
           <Image
             onClick={() => setExpand(!expand)}
             className="rotate-180 cursor-pointer w-6 h-6"
@@ -43,14 +53,18 @@ export default function Home() {
             alt="Menu"
           />
           <span className="font-semibold text-sm">Quick Chat, by quick-ai</span>
-          <Image className="opacity-70 w-6 h-6" src={assets.chat_icon} alt="Chat" />
+          <Image className="opacity-70 w-6 h-6 cursor-pointer" onClick={() => setIsSearchOpen(true)} src={assets.search_icon} alt="Search" />
         </div>
 
+        {/* Chat Action Header */}
+        <div className="w-full max-w-3xl pt-8 md:pt-2 flex justify-center">
+          <ChatHeader onOpenSearch={() => setIsSearchOpen(true)} />
+        </div>
 
         {/* Messages / Welcome View */}
-        <div className="w-full max-w-3xl flex-1 overflow-y-auto pt-10 md:pt-4 px-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-600">
+        <div className="w-full max-w-3xl flex-1 overflow-y-auto px-2 space-y-4 scrollbar-thin scrollbar-thumb-gray-600">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center my-auto pt-12">
+            <div className="flex flex-col items-center justify-center h-full text-center my-auto pt-6">
               <div className="flex items-center gap-3 mb-2">
                 <Image src={assets.deepthink_icon} alt="Logo" className="h-14 w-14" />
                 <h1 className="text-3xl font-semibold text-white tracking-tight">Hi, I'm Quick Chat.</h1>

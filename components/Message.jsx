@@ -35,7 +35,8 @@ const CodeBlock = ({ language, code }) => {
 };
 
 const Message = ({ role, content }) => {
-    const { sendMessage } = useAppContext();
+    const context = useAppContext();
+    const sendMessage = context?.sendMessage;
 
     const handleCopyText = () => {
         navigator.clipboard.writeText(content);
