@@ -117,4 +117,3 @@ This app is ready for deployment on Vercel or any platform that supports Next.js
 
 ---
 
-If you want, I can also add a short `README` section describing the UI controls and deep-think mode in more detail.
